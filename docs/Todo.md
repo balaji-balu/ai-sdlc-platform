@@ -1,8 +1,11 @@
-1. observability. 
-- llm cost, context taces 
-2. ci(dagger) used by qa agent
-3. platform data maganagement
-4. platform follows ai-native sdlc
+platform:
+- observability. 
+    - llm cost, context taces 
+    - ci(dagger) used by qa agent
+    - platform data maganagement
+    - platform follows ai-native sdlc
+- orchestrator workflows
+- integration of driftguard, drift chaos monkey
 
 for the system generated:
 - data prep for ai
