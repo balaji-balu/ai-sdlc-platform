@@ -6,6 +6,7 @@ platform:
     - platform follows ai-native sdlc
 - orchestrator workflows
 - integration of driftguard, drift chaos monkey
+- reconcilation
 
 for the system generated:
 - data prep for ai

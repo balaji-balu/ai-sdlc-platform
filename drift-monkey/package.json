@@ -1,0 +1,16 @@
+{
+  "name": "drift-monkey",
+  "version": "0.1.0",
+  "description": "RFC-0005 source-code chaos engine for testing drift guards",
+  "type": "module",
+  "bin": {
+    "drift-monkey": "./bin/drift-monkey.js"
+  },
+  "scripts": {
+    "start": "node ./bin/drift-monkey.js --config ./monkey.yaml",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "yaml": "^2.8.1"
+  }
+}

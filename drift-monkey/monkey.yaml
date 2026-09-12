@@ -1,0 +1,23 @@
+# RFC-0005 Drift-Monkey configuration.
+root: .
+seed: 20260912
+dryRun: true
+loops: 1
+
+mutations:
+  implementation:
+    enabled: true
+    intensity: 0.8
+    files:
+      - "src/**/*.{ts,tsx,js,jsx}"
+  design:
+    enabled: false
+    intensity: 0.5
+    files:
+      - "src/**/*.{ts,tsx,js,jsx}"
+  maintenance:
+    enabled: true
+    intensity: 0.5
+    files:
+      - package.json
+      - package-lock.json

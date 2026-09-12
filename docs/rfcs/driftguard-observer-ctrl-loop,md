@@ -1,0 +1,95 @@
+RFC-0001: The Observer-Corrector Control Loop Architecture
+Status: Proposed
+Author: [Your Name/GitHub Handle]
+Created: 2026-09-12
+Target Layer: Core Engine Infrastructure
+
+1. Executive Summary
+Long-running AI agents executing multi-hour, multi-step code generation tasks inevitably suffer from compounding multi-level drift. This manifests across seven distinct planes: Business, System, Architecture, Design, Implementation, Deployment, and Maintenance.
+Current agent frameworks rely heavily on localized, mono-loop prompt engineering, which fails to isolate or remediate structural drift. This RFC proposes an open-source, deterministic, Kubernetes-style Control Loop framework based on an Observer-Corrector paradigm. It isolates the execution engine from multi-layered guardrails via a uniform interface contract, allowing for decoupled, incremental system expansion.
+
+2. Architectural Design Patterns
+The Control Loop Topology
+Instead of treating an LLM agent as a singular monolithic brain, this framework treats it as an un-trusted actor operating within a closed loop. The loop relies on three decoupled primitives:
+Observe: Non-destructively inspects the workspace state (Codebase, ASTs, PRDs, Staging Env Logs).
+Evaluate: Measures the delta between the observed state and the original baseline specifications.
+Correct: Generates remediation plans and instructs execution agents or tools to execute changes when drift crosses defined thresholds.
+      ┌──────────────────────────────────────────────────┐
+       │                                                  │
+       ▼                                                  │
+┌──────────────┐       ┌──────────────┐       ┌───────────┴──┐
+│  1. OBSERVE  │ ───>  │  2. EVALUATE │ ───>  │  3. CORRECT  │
+└──────────────┘       └──────────────┘       └──────────────┘
+(State Snapshot)        (Drift Matrix)        (Remediation Event)
+
+
+
+3. Technical Specification & Interfaces
+To maintain strict modularity, all drift guardrails across the seven systemic layers must implement a uniform lifecycle interface contract.
+The Unified DriftGuard Contract
+export type DriftLayer = 
+  | 'business' 
+  | 'system' 
+  | 'architecture' 
+  | 'design' 
+  | 'implementation' 
+  | 'deployment' 
+  | 'maintenance';
+
+export interface StateSnapshot {
+  timestamp: number;
+  layer: DriftLayer;
+  payload: Record<string, any>; // Extensible metadata specific to the layer
+}
+
+export interface DriftReport {
+  hasDrifted: boolean;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  varianceDescription: string;
+  telemetryDelta: any;
+}
+
+export interface CorrectionPlan {
+  strategy: 'rollback' | 'refactor' | 'halt' | 'override';
+  instructionSet: string; // Structured payload fed back to the LLM/Tool context
+}
+
+export interface DriftGuard {
+  readonly id: string;
+  readonly targetLayer: DriftLayer;
+
+  /** Inspects the environment to harvest the current reality */
+  observe(workspacePath: string, contextState: any): Promise<StateSnapshot>;
+
+  /** Compares reality against historical boundaries/specifications */
+  evaluate(current: StateSnapshot, baseline: any): Promise<DriftReport>;
+
+  /** Emits instructions or hooks to correct the system vector */
+  correct(report: DriftReport): Promise<CorrectionPlan>;
+}
+
+
+
+4. The 7-Layer Drift Taxonomy (Phased Implementation Roadmap)
+We propose an inside-out evolutionary rollout. We start at the code layer (Phase 1) and expand outward to systemic boundaries.
+Phase 1: Core Engine & Keyboard Operations
+Layer 5: Implementation Drift: Catches syntactic bugs, logic compilation errors, and local infinite code-generation loop regressions.
+Layer 4: Design Drift: Utilizes Abstract Syntax Tree (AST) evaluation hooks to prevent code smells (e.g., breaking SOLID principles, bloated cyclomatic complexity).
+Phase 2: System Boundaries & Integration
+Layer 3: Architectural Drift: Enforces system boundaries (e.g., stopping an agent from introducing unauthorized third-party paradigms or crossing strict microservice boundaries).
+Layer 6: Deployment Drift: Observes ephemeral staging environments to catch configurations, schema migrations, and Dockerfile drifts during autonomous code deployments.
+Phase 3: Alignment & Lifecycle Management
+Layer 1: Business Drift: Continuously evaluates functional feature code drift against natural language Product Requirement Documents (PRDs).
+Layer 2: System Drift: Tracks non-functional requirements (such as token budget creep, performance latency limits, and security vulnerabilities).
+Layer 7: Maintenance Drift: Blocks structural decay like unpinned dependencies, outdated lockfiles, and code deprecation.
+
+5. Architectural Trade-offs & Challenges (Open Questions)
+We invite the engineering community to contribute immediately to solving these fundamental design tensions:
+State Minimization vs. Context Bloat: How do we record state snapshots spanning hundreds of steps without overflowing LLM context limits or spiking cost vectors?
+Observer Determinism: Should the Observe and Evaluate steps be purely deterministic (e.g., running AST parsers, linters, testing frameworks) or semi-probabilistic (using cheaper, highly focused LLMs)?
+Halt Strategies: At what severity threshold of drift does an agent loop automatically freeze execution to raise human-in-the-loop paging events?
+
+6. How to Contribute
+We are designing this system entirely in the open prior to finalizing code frameworks. To contribute:
+Review: Open an issue or submit a Pull Request to refine this core RFC contract.
+Pick a Layer: Propose individual specifications under rfcs/layers/ for specific drift guards (e.g., how an AST design guard should operate).
